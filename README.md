@@ -25,6 +25,10 @@ Para lo que se refiere a Cliente para el manejo de Catálogo de clientes
 Para lo que se refiere a Proveedores para el manejo de Catalogo de Proveedores
 Para las Compras para las Compras que se realiza a los Proveedores
 Para las Ventas las transacciones mercantiles de ventas que se realizan
+
+
+
+
 Ahora bien para eso se va a explicar la instalación de Laravel para dar mas explicación mas adelante del proyecto:
 
 Instalación de Laravel
@@ -120,9 +124,7 @@ Clave:   Josue2019
 Para eso si estas usando el aplicativo xampp, el proyecto lo debes de descargar a la carpeta c:/xampp/htdocs/proyectolaravel 
 es decir dentro de la carpeta htdocs de xampp debe estar registrado el proyecto laravel
 
-Para descargar la base del proyecto esta en el siguiente link o enlace:
 
-https://github.com/jfrugone1970/base_proyectolaravel
 
 
 
