@@ -37,17 +37,17 @@ class Command
     private $application;
     private $name;
     private $processTitle;
-    private $aliases = [];
+    private $aliases = array();
     private $definition;
     private $hidden = false;
-    private $help = '';
-    private $description = '';
+    private $help;
+    private $description;
     private $ignoreValidationErrors = false;
     private $applicationDefinitionMerged = false;
     private $applicationDefinitionMergedWithArgs = false;
     private $code;
-    private $synopsis = [];
-    private $usages = [];
+    private $synopsis = array();
+    private $usages = array();
     private $helperSet;
 
     /**
@@ -55,7 +55,7 @@ class Command
      */
     public static function getDefaultName()
     {
-        $class = static::class;
+        $class = \get_called_class();
         $r = new \ReflectionProperty($class, 'defaultName');
 
         return $class === $r->class ? static::$defaultName : null;
@@ -66,7 +66,7 @@ class Command
      *
      * @throws LogicException When the command name is empty
      */
-    public function __construct(string $name = null)
+    public function __construct($name = null)
     {
         $this->definition = new InputDefinition();
 
@@ -105,7 +105,7 @@ class Command
     /**
      * Gets the helper set.
      *
-     * @return HelperSet|null A HelperSet instance
+     * @return HelperSet A HelperSet instance
      */
     public function getHelperSet()
     {
@@ -115,7 +115,7 @@ class Command
     /**
      * Gets the application instance for this command.
      *
-     * @return Application|null An Application instance
+     * @return Application An Application instance
      */
     public function getApplication()
     {
@@ -150,7 +150,7 @@ class Command
      * execute() method, you set the code to execute by passing
      * a Closure to the setCode() method.
      *
-     * @return int 0 if everything went fine, or an exit code
+     * @return int|null null or 0 if everything went fine, or an error code
      *
      * @throws LogicException When this abstract method is not implemented
      *
@@ -250,13 +250,9 @@ class Command
         $input->validate();
 
         if ($this->code) {
-            $statusCode = ($this->code)($input, $output);
+            $statusCode = \call_user_func($this->code, $input, $output);
         } else {
             $statusCode = $this->execute($input, $output);
-
-            if (!\is_int($statusCode)) {
-                @trigger_error(sprintf('Return value of "%s::execute()" should always be of the type int since Symfony 4.4, %s returned.', static::class, \gettype($statusCode)), E_USER_DEPRECATED);
-            }
         }
 
         return is_numeric($statusCode) ? (int) $statusCode : 0;
@@ -281,7 +277,15 @@ class Command
         if ($code instanceof \Closure) {
             $r = new \ReflectionFunction($code);
             if (null === $r->getClosureThis()) {
-                $code = \Closure::bind($code, $this);
+                if (\PHP_VERSION_ID < 70000) {
+                    // Bug in PHP5: https://bugs.php.net/bug.php?id=64761
+                    // This means that we cannot bind static closures and therefore we must
+                    // ignore any errors here.  There is no way to test if the closure is
+                    // bindable.
+                    $code = @\Closure::bind($code, $this);
+                } else {
+                    $code = \Closure::bind($code, $this);
+                }
             }
         }
 
@@ -343,10 +347,6 @@ class Command
      */
     public function getDefinition()
     {
-        if (null === $this->definition) {
-            throw new LogicException(sprintf('Command class "%s" is not correctly initialized. You probably forgot to call the parent constructor.', static::class));
-        }
-
         return $this->definition;
     }
 
@@ -369,9 +369,9 @@ class Command
      * Adds an argument.
      *
      * @param string               $name        The argument name
-     * @param int|null             $mode        The argument mode: InputArgument::REQUIRED or InputArgument::OPTIONAL
+     * @param int|null             $mode        The argument mode: self::REQUIRED or self::OPTIONAL
      * @param string               $description A description text
-     * @param string|string[]|null $default     The default value (for InputArgument::OPTIONAL mode only)
+     * @param string|string[]|null $default     The default value (for self::OPTIONAL mode only)
      *
      * @throws InvalidArgumentException When argument mode is not valid
      *
@@ -388,10 +388,10 @@ class Command
      * Adds an option.
      *
      * @param string                        $name        The option name
-     * @param string|array|null             $shortcut    The shortcuts, can be null, a string of shortcuts delimited by | or an array of shortcuts
-     * @param int|null                      $mode        The option mode: One of the InputOption::VALUE_* constants
+     * @param string|array                  $shortcut    The shortcuts, can be null, a string of shortcuts delimited by | or an array of shortcuts
+     * @param int|null                      $mode        The option mode: One of the VALUE_* constants
      * @param string                        $description A description text
-     * @param string|string[]|int|bool|null $default     The default value (must be null for InputOption::VALUE_NONE)
+     * @param string|string[]|int|bool|null $default     The default value (must be null for self::VALUE_NONE)
      *
      * @throws InvalidArgumentException If option mode is invalid or incompatible
      *
@@ -449,7 +449,7 @@ class Command
     /**
      * Returns the command name.
      *
-     * @return string|null
+     * @return string The command name
      */
     public function getName()
     {
@@ -533,16 +533,15 @@ class Command
     public function getProcessedHelp()
     {
         $name = $this->name;
-        $isSingleCommand = $this->application && $this->application->isSingleCommand();
 
-        $placeholders = [
+        $placeholders = array(
             '%command.name%',
             '%command.full_name%',
-        ];
-        $replacements = [
+        );
+        $replacements = array(
             $name,
-            $isSingleCommand ? $_SERVER['PHP_SELF'] : $_SERVER['PHP_SELF'].' '.$name,
-        ];
+            $_SERVER['PHP_SELF'].' '.$name,
+        );
 
         return str_replace($placeholders, $replacements, $this->getHelp() ?: $this->getDescription());
     }
@@ -559,7 +558,7 @@ class Command
     public function setAliases($aliases)
     {
         if (!\is_array($aliases) && !$aliases instanceof \Traversable) {
-            throw new InvalidArgumentException('$aliases must be an array or an instance of \Traversable.');
+            throw new InvalidArgumentException('$aliases must be an array or an instance of \Traversable');
         }
 
         foreach ($aliases as $alias) {
@@ -651,9 +650,11 @@ class Command
      *
      * It must be non-empty and parts can optionally be separated by ":".
      *
+     * @param string $name
+     *
      * @throws InvalidArgumentException When the name is invalid
      */
-    private function validateName(string $name)
+    private function validateName($name)
     {
         if (!preg_match('/^[^\:]++(\:[^\:]++)*$/', $name)) {
             throw new InvalidArgumentException(sprintf('Command name "%s" is invalid.', $name));

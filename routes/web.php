@@ -5,238 +5,119 @@
 | Web Routes
 |--------------------------------------------------------------------------
 |
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
+|PUT AND DELETE method not work in some windows server that's why laiter we use 
+ get and post mehod for update and delete
 |
 */
+Route::group(['middleware'=> ['auth','check.permission']],function(){
 
-Route::group(['middleware' => ['guest']], function () {
-     
-    Route::get('/','Auth\LoginController@showLoginForm');
-    Route::post('/login', 'Auth\LoginController@login')->name('login');
-});
 
-Route::group(['middleware' => ['auth']], function () {
 
-    Route::post('/logout', 'Auth\LoginController@logout')->name('logout');
-    Route::get('/dashboard', 'DashboardController');
-      
-    Route::get('/main', function () {
-        return view('contenido/contenido');
-    })->name('main');
 
-    Route::group(['middleware' => ['Comprador']], function () {
-         
-        Route::get('/categoria', 'CategoriaController@index');
-        Route::post('/categoria/registrar', 'CategoriaController@store');
-        Route::put('/categoria/actualizar', 'CategoriaController@update');
-        Route::put('/categoria/desactivar', 'CategoriaController@desactivar');
-        Route::put('/categoria/activar', 'CategoriaController@activar');
-        Route::get('/categoria/selectCategoria', 'CategoriaController@selectCategoria');
-        Route::get('/categoria/listarPDF', 'CategoriaController@listarPDF');
-        
-        Route::get('/producto', 'ProductoController@index');
-        Route::post('/producto/registrar', 'ProductoController@store');
-        Route::put('/producto/actualizar', 'ProductoController@update');
-        Route::put('/producto/desactivar', 'ProductoController@desactivar');
-        Route::put('/producto/activar', 'ProductoController@activar');
-        Route::get('/producto/buscarProducto', 'ProductoController@buscarProducto');
-        Route::get('/producto/listarProductos', 'ProductoController@listarProductos'); 
-        Route::get('/producto/listarPDF', 'ProductoController@listarPDF')->name('productos_pdf');
-        
-        Route::get('/proveedor', 'ProveedorController@index');
-        Route::post('/proveedor/registrar', 'ProveedorController@store');
-        Route::put('/proveedor/actualizar', 'ProveedorController@update');
-        Route::get('/proveedor/selectProveedor', 'ProveedorController@selectProveedor');
-        Route::get('/proveedor/listarPDF', 'ProveedorController@listarPDF')->name('proveedores_pdf');
-        
-        Route::get('/compra', 'CompraController@index');
-        Route::post('/compra/registrar', 'CompraController@store');
-        Route::put('/compra/desactivar', 'CompraController@desactivar');
-        Route::get('/compra/buscarc', 'CompraController@buscarCompra');
-        Route::get('/compra/obtenerCabecera', 'CompraController@obtenerCabecera');
-        Route::get('/compra/obtenerDetalles', 'CompraController@obtenerDetalles');
-        Route::get('/compra/pdf{id}', 'CompraController@pdf')->name('compra_pdf');
-        
-    });
+// dashaboard 
+Route::get('/','DashboardController@index');
+Route::get('info-box','DashboardController@InfoBox');
+// vendor 
 
-    Route::group(['middleware' => ['Vendedor']], function () {
+Route::resource('supplier','VendorController');
+Route::get('supplier/delete/{id}','VendorController@destroy');
+Route::post('supplier/update/{id}','VendorController@update');
+Route::get('vendor-list','VendorController@Vendor');
 
-        Route::get('/categoria', 'CategoriaController@index');
-        Route::post('/categoria/registrar', 'CategoriaController@store');
-        Route::put('/categoria/actualizar', 'CategoriaController@update');
-        Route::put('/categoria/desactivar', 'CategoriaController@desactivar');
-        Route::put('/categoria/activar', 'CategoriaController@activar');
-        Route::get('/categoria/selectCategoria', 'CategoriaController@selectCategoria');
-        Route::get('/categoria/listarPDF', 'CategoriaController@listarPDF');
-        
-        Route::get('/producto', 'ProductoController@index');
-        Route::post('/producto/registrar', 'ProductoController@store');
-        Route::put('/producto/actualizar', 'ProductoController@update');
-        Route::put('/producto/desactivar', 'ProductoController@desactivar');
-        Route::put('/producto/activar', 'ProductoController@activar');
-        Route::get('/producto/buscarProducto', 'ProductoController@buscarProducto');
-        Route::get('/producto/listarProductos', 'ProductoController@listarProductos');
-        Route::get('/producto/buscarProductoVenta', 'ProductoController@buscarProductoVenta');
-        Route::get('/producto/listarProductoVenta', 'ProductoController@listarProductoVenta');
-        Route::get('/producto/listarPDF', 'ProductoController@listarPDF')->name('productos_pdf');
-        
-        Route::get('/cliente', 'ClienteController@index');
-        Route::post('/cliente/registrar', 'ClienteController@store');
-        Route::put('/cliente/actualizar', 'ClienteController@update');
-        Route::get('/cliente/selectCliente', 'ClienteController@selectCliente');
-        Route::get('/cliente/buscaCliente', 'ClienteController@buscaCliente');
-        Route::get('/cliente/listarCliente', 'ClienteController@listarClientesTotal');
-        Route::get('/cliente/listarPDF', 'ClienteController@listarPDF');
-    
-        Route::get('/venta', 'VentaController@index');
-        Route::post('/venta/registrar', 'VentaController@store');
-        Route::get('/venta/obtenerCabecera', 'VentaController@obtenerCabecera');
-        Route::get('/venta/obtenerDetalle', 'VentaController@obtenerDetalle');
-        Route::get('/venta/selectFormaPago', 'VentaController@selectFormaPago');
-        Route::get('/venta/buscarv', 'VentaController@buscarVenta');
-        Route::put('/venta/desactivar', 'VentaController@desactivar');
-        Route::get('/venta/pdf{id}', 'VentaController@pdf')->name('venta_pdf');
+// product category 
 
-        Route::get('/detalle', 'DashboardDetalleController');
+Route::resource('category','CategoryController');
+// category delete 
+Route::get('category/delete/{id}','CategoryController@destroy');
+//category update
+Route::post('category/update/{id}','CategoryController@update');
 
-        Route::get('/bancos', 'BancoController@index');
-        Route::get('/bancos/selectBancos', 'BancoController@selectBancos');
-        Route::get('/bancos/busquedaClientesBanco', 'BancoController@selectClientesBanco');
-        Route::get('/bancos/listarBcosCli', 'BancoController@listarBcoCliente');
-        Route::get('/bancos/indexClientesBanco', 'BancoController@indexClientesBanco');
-        Route::get('/bancos/listarPDF', 'BancoController@listarPDF');
-        Route::get('/bancos/listarBancos', 'BancoController@listarBancosTotal');
-        Route::post('/bancos/registrar', 'BancoController@store');
-        Route::get('/bancos/buscaBanco', 'BancoController@buscaBanco');
-        Route::post('/bancos/registrarclibanco', 'BancoController@storeclientebanco');
-        Route::put('/bancos/actualizar', 'BancoController@update');
-        Route::put('/bancos/actualizarcliebancos', 'BancoController@updateclientesbanco');
-        Route::put('/bancos/desactivar', 'BancoController@desactivar');
-        Route::put('/bancos/activar', 'BancoController@activar');
+Route::get('category-list','CategoryController@CategoryList');
 
-        Route::get('/tarjetas', 'TarjetaController@index');
-        Route::get('/tarjetas/listarTarjetas', 'TarjetaController@listarTarjetas');
-        Route::get('/tarjetas/listaclitarjeta', 'TarjetaController@listarClienteTarjeta');
-        Route::get('/tarjetas/listarPDF', 'TarjetaController@listarPDF');
-        Route::get('/tarjetas/selectTarjetas', 'TarjetaController@selectTarjetas');
-        Route::get('/tarjetas/listarTarCliente', 'TarjetaController@listarTarjetasTotal');
-        Route::post('/tarjetas/registrar', 'TarjetaController@store');
-        Route::post('/tarjetas/registrarclitarjeta', 'TarjetaController@storeClienteTarjeta');
-        Route::put('/tarjetas/actualizar', 'TarjetaController@update');
-        Route::put('/tarjetas/updatetarcliente', 'TarjetaController@updatetarcliente');
-        Route::put('/tarjetas/desactivar', 'TarjetaController@desactivar');
-        Route::put('/tarjetas/activar', 'TarjetaController@activar');
+Route::get('all-category','CategoryController@AllCategory');
 
-        Route::get('/pago/listar', 'PagoController@index');
-        Route::get('/pago/pdf{id}', 'PagoController@pdf')->name('pago_pdf');
-        Route::post('/pago/pagar', 'PagoController@store');
-            
-    });
+// product 
+Route::resource('product','ProductController');
+Route::get('product/delete/{id}','ProductController@destroy');
+Route::post('product/update/{id}','ProductController@update');
 
-    Route::group(['middleware' => ['Administrador']], function () {
+Route::get('product-list','ProductController@ProductList');
+Route::get('category/product/{id}','ProductController@productByCategory');
 
-        Route::get('/categoria', 'CategoriaController@index');
-        Route::post('/categoria/registrar', 'CategoriaController@store');
-        Route::put('/categoria/actualizar', 'CategoriaController@update');
-        Route::put('/categoria/desactivar', 'CategoriaController@desactivar');
-        Route::put('/categoria/activar', 'CategoriaController@activar');
-        Route::get('/categoria/selectCategoria', 'CategoriaController@selectCategoria');
-        Route::get('/categoria/listarPDF', 'CategoriaController@listarPDF');
-        
-        Route::get('/producto', 'ProductoController@index');
-        Route::post('/producto/registrar', 'ProductoController@store');
-        Route::put('/producto/actualizar', 'ProductoController@update');
-        Route::put('/producto/desactivar', 'ProductoController@desactivar');
-        Route::put('/producto/activar', 'ProductoController@activar');
-        Route::get('/producto/buscarProducto', 'ProductoController@buscarProducto');
-        Route::get('/producto/listarProductos', 'ProductoController@listarProductos');
-        Route::get('/producto/buscarProductoVenta', 'ProductoController@buscarProductoVenta');
-        Route::get('/producto/listarProductoVenta', 'ProductoController@listarProductoVenta');
-        Route::get('/producto/listarPDF', 'ProductoController@listarPDF')->name('productos_pdf');
-        
-        Route::get('/proveedor', 'ProveedorController@index');
-        Route::post('/proveedor/registrar', 'ProveedorController@store');
-        Route::put('/proveedor/actualizar', 'ProveedorController@update');
-        Route::get('/proveedor/selectProveedor', 'ProveedorController@selectProveedor');
-        Route::get('/proveedor/listarPDF', 'ProveedorController@listarPDF')->name('proveedores_pdf');
-        
 
-        Route::get('/compra', 'CompraController@index');
-        Route::post('/compra/registrar', 'CompraController@store');
-        Route::put('/compra/desactivar', 'CompraController@desactivar');
-        Route::get('/compra/buscarc', 'CompraController@buscarCompra');
-        Route::get('/compra/obtenerCabecera', 'CompraController@obtenerCabecera');
-        Route::get('/compra/obtenerDetalles', 'CompraController@obtenerDetalles');
-        Route::get('/compra/pdf{id}', 'CompraController@pdf')->name('compra_pdf');
-              
-        Route::get('/cliente', 'ClienteController@index');
-        Route::post('/cliente/registrar', 'ClienteController@store');
-        Route::put('/cliente/actualizar', 'ClienteController@update');
-        Route::get('/cliente/selectCliente', 'ClienteController@selectCliente');
-        Route::get('/cliente/buscaCliente', 'ClienteController@buscaCliente');
-        Route::get('/cliente/listarCliente', 'ClienteController@listarClientesTotal');
-        Route::get('/cliente/listarPDF', 'ClienteController@listarPDF');
 
-        Route::get('/venta', 'VentaController@index');
-        Route::post('/venta/registrar', 'VentaController@store');
-        Route::get('/venta/obtenerCabecera', 'VentaController@obtenerCabecera');
-        Route::get('/venta/obtenerDetalle', 'VentaController@obtenerDetalle');
-        Route::get('/venta/buscarv', 'VentaController@buscarVenta');
-        Route::get('/venta/selectFormaPago', 'VentaController@selectFormaPago');
-        Route::put('/venta/desactivar', 'VentaController@desactivar');
-        Route::get('/venta/pdf{id}', 'VentaController@pdf')->name('venta_pdf');
-               
-        Route::get('/rol', 'RolController@index');
-        Route::get('/rol/selectRol', 'RolController@selectRol');
-        
-        Route::get('/user', 'UserController@index');
-        Route::post('/user/registrar', 'UserController@store');
-        Route::put('/user/actualizar', 'UserController@update');
-        Route::put('/user/desactivar', 'UserController@desactivar');
-        Route::put('/user/activar', 'UserController@activar');
+// customer 
+Route::resource('customer','CustomerController');
+Route::get('customer/delete/{id}','CustomerController@destroy');
+Route::post('customer/update/{id}','CustomerController@update');
+Route::get('customer-list','CustomerController@CustomerList');
 
-        Route::get('/detalle', 'DashboardDetalleController');
+//Stock
 
-        Route::get('/bancos', 'BancoController@index');
-        Route::get('/bancos/selectBancos', 'BancoController@selectBancos');
-        Route::get('/bancos/busquedaClientesBanco', 'BancoController@selectClientesBanco');
-        Route::get('/bancos/indexClientesBanco', 'BancoController@indexClientesBanco');
-        Route::get('/bancos/listarPDF', 'BancoController@listarPDF');
-        Route::get('/bancos/buscaBanco', 'BancoController@buscaBanco');
-        Route::get('/bancos/listarBancos', 'BancoController@listarBancosTotal');
-        Route::get('/bancos/listarBcosCli', 'BancoController@listarBcoCliente');
-        Route::post('/bancos/registrar', 'BancoController@store');
-        Route::post('/bancos/registrarclibanco', 'BancoController@storeclientebanco');
-        Route::put('/bancos/actualizar', 'BancoController@update');
-        Route::put('/bancos/actualizarcliebancos', 'BancoController@updateclientesbanco');
-        Route::put('/bancos/desactivar', 'BancoController@desactivar');
-        Route::put('/bancos/activar', 'BancoController@activar');
+Route::resource('stock','StockController');
+Route::get('stock/delete/{id}','StockController@destroy');
+Route::post('stock/update/{id}','StockController@update');
+Route::get('stock-list','StockController@StockList');
+Route::get('chalan-list/chalan/{id}','StockController@ChalanList');
+Route::get('stock-asset','StockController@StockAsset');
+Route::post('stock-update','StockController@StockUpdate');
 
-        Route::get('/tarjetas', 'TarjetaController@index');
-        Route::get('/tarjetas/listarTarjetas', 'TarjetaController@listarTarjetas');
-        Route::get('/tarjetas/listaclitarjeta', 'TarjetaController@listarClienteTarjeta');
-        Route::get('/tarjetas/selectTarjetas', 'TarjetaController@selectTarjetas');
-        Route::get('/tarjetas/listarPDF', 'TarjetaController@listarPDF');
-        Route::get('/tarjetas/listarTarCliente', 'TarjetaController@listarTarjetasTotal');
-        Route::post('/tarjetas/registrar', 'TarjetaController@store');
-        Route::post('/tarjetas/registrarclitarjeta', 'TarjetaController@storeClienteTarjeta');
-        Route::put('/tarjetas/actualizar', 'TarjetaController@update');
-        Route::put('/tarjetas/updatetarcliente', 'TarjetaController@updatetarcliente');
-        Route::put('/tarjetas/desactivar', 'TarjetaController@desactivar');
-        Route::put('/tarjetas/activar', 'TarjetaController@activar');
+// invoice 
 
-        Route::get('/pago/listar', 'PagoController@index');
-        Route::get('/pago/pdf{id}', 'PagoController@pdf')->name('pago_pdf');
-        Route::post('/pago/pagar', 'PagoController@store');
-        
-    });
-    
-      
+Route::resource('invoice','InvoiceController');
+Route::get('invoice/delete/{id}','InvoiceController@destroy');
+Route::post('invoice/update/{id}','InvoiceController@update');
+Route::get('invoice-list','InvoiceController@InvoiceList');
+Route::get('get/invoice/number','InvoiceController@getLastInvoice');
+
+// payment 
+
+Route::resource('payment','PaymentController');
+Route::get('payment/delete/{id}','PaymentController@destroy');
+
+
+
+// Report 
+
+
+Route::resource('role','RoleController');
+Route::get('role/delete/{id}','RoleController@destroy');
+Route::post('role/update/{id}','RoleController@update');
+Route::get('role-list','RoleController@RoleList');
+Route::post('permission','RoleController@Permission');
+
+
+
+
+Route::get('report',['as'=>'report.index','uses'=>'ReportingController@index']);
+Route::get('get-report',['as'=>'report.store','uses'=>'ReportingController@store']);
+Route::get('print-report',['as'=>'report.print','uses'=>'ReportingController@Print']);
+
+// user management 
+
+
+Route::resource('user','UserManageController');
+Route::get('user/delete/{id}','UserManageController@destroy');
+Route::post('user/update/{id}','UserManageController@update');
+
+Route::get('user-list','UserManageController@UserList');
+
+Route::get('comapany-setting',['as'=>'company.index','uses'=>'CompanyController@index']);
+Route::post('comapany-setting',['as'=>'company.store','uses'=>'CompanyController@store']);
+Route::get('password-change',['as'=>'password.index','uses'=>'SettingController@index']);
+Route::post('password-change',['as'=>'password.store','uses'=>'SettingController@store']);
+
+
+Route::get('user-role','RoleController@userRole');
+
+
+
+
+Route::get('logout','UserController@logout');
+
 });
 
 
+Auth::routes();
 
-
-//Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'HomeController@index')->name('home');
